@@ -44,3 +44,12 @@ def get_street_view_api_key():
     street_view_key = keys['google']['key']
 
     return(street_view_key)
+
+def get_db_location():
+    # read in api keys
+    with open(r'api_keys.yaml') as file:
+        keys = yaml.full_load(file)
+
+    db_location = keys['database location']
+
+    return(db_location)

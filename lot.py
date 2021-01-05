@@ -5,16 +5,17 @@ import requests
 from io import BytesIO
 import config
 
-QUERY = "SELECT * FROM portland_test WHERE tweeted = 0 ORDER BY id LIMIT 1;"
+QUERY = "SELECT * FROM only69 WHERE tweeted = 0 ORDER BY id LIMIT 1;"
 
 svapi = "https://maps.googleapis.com/maps/api/streetview"
 
 street_view_key = config.get_street_view_api_key()
 twitter_api = config.create_twitter_api()
+db_location = config.get_db_location()
 
 class NiceLot(object):
     # on initialization query the db for an untweeted address
-    def __init__(self, database = 'addresses.db'):
+    def __init__(self, database = db_location):
         # connect to the db
         self.conn = sqlite3.connect(database)
 
@@ -30,7 +31,7 @@ class NiceLot(object):
     # gets the image of the address from google street view
     def get_image(self, street_view_key=config.get_street_view_api_key()):
         # concatenate the address
-        self.street_address = "%s %s %s %s %s" % (self.address['number'], self.address['street'], self.address['city'], self.address['region'], self.address['postcode'])
+        self.street_address = "%s %s %s %s %s" % (self.address['number'], self.address['street'], self.address['city'], self.address['state'], self.address['zip'])
 
         # gather the street view api key, address, and image size for the api request
         params = dict(key = street_view_key,
@@ -52,15 +53,18 @@ class NiceLot(object):
         self.image_id = twitter_api.media_upload(filename, file=self.tempimg)
          
     def post_tweet(self, twitter_api = config.create_twitter_api()):
-        text = self.street_address.title().strip()
-        text = " ".join(text.split())
+        text = "{number} {street}. {city}, {state}".format(
+            number = self.address['number'],
+            street = self.address['street'].title(),
+            city = self.address['city'].title(),
+            state = self.address['state'].upper())
         self.status_id = twitter_api.update_status(status=text,
                                   media_ids=[self.image_id.media_id_string],
                                   lat=self.address['lat'],
                                   lon=self.address['lon'])
     
     def mark_as_tweeted(self):
-        self.conn.execute("UPDATE portland_test SET tweeted = ? WHERE id = ?", (self.status_id.id, self.address['id']))
+        self.conn.execute("UPDATE only69 SET tweeted = ? WHERE id = ?", (self.status_id.id, self.address['id']))
         self.conn.commit()
 
 
