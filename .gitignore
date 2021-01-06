@@ -4,3 +4,4 @@ api_keys.yaml
 __pycache__/
 .vscode/
 *.zip
+log.txt

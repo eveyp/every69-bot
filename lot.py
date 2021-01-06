@@ -14,7 +14,7 @@ twitter_api = config.create_twitter_api()
 db_location = config.get_db_location()
 
 st_abbs = ["rd", "dr", "st", "ave", "ln", "ct", "cir", "pl", "blvd", "trl", "av", "ter",
-           "pkmy", "hwy", "rdg", "wy", "ext", "tr", "pt", "sq", "vlg", "hl", "terr", 
+           "pkmy", "hwy", "rdg", "wy", "ext", "tr", "pt", "sq", "vlg", "hl", "terr",
            "hts", "holw", "bl", "aly", "ci", "tpke", "trce", "cl", "ests"]
 
 
@@ -39,6 +39,9 @@ class NiceLot(object):
         if street_type in st_abbs:
             self.address['street'] += "."
 
+        logging.info("Got a lot: %s %s %s %s",
+                     self.address['street'], self.address['city'], self.address['state'], self.address['zip'])
+
     # gets the image of the address from google street view
     def get_image(self, street_view_key=config.get_street_view_api_key()):
         # concatenate the address
@@ -60,6 +63,8 @@ class NiceLot(object):
         self.tempimg = BytesIO()
         image.save(self.tempimg, format="jpeg")
 
+        logging.info("Got image from Google")
+
     def prep_tweet(self, twitter_api=config.create_twitter_api()):
         filename = "%s.jpg" % self.address['id']
         self.image_id = twitter_api.media_upload(filename, file=self.tempimg)
@@ -69,14 +74,19 @@ class NiceLot(object):
             city=self.address['city'].title(),
             state=self.address['state'].upper())
 
+        logging.info("Tweet text ready: %s", self.tweet_text)
+
     def post_tweet(self, twitter_api=config.create_twitter_api()):
 
         self.status_id = twitter_api.update_status(status=self.tweet_text,
                                                    media_ids=[self.image_id.media_id_string],
                                                    lat=self.address['lat'],
                                                    lon=self.address['lon'])
+        logging.info("Tweet posted")
 
     def mark_as_tweeted(self):
         self.conn.execute("UPDATE only69 SET tweeted = ? WHERE id = ?",
                           (self.status_id.id, self.address['id']))
         self.conn.commit()
+
+        logging.info("Lot marked as tweeted")

@@ -3,7 +3,11 @@ import logging
 import yaml
 
 # start logger
-logger = logging.getLogger()
+log_format = '%(asctime)s %(levelname)s: %(message)s'
+log_date_format = '%Y-%m-%d %I:%M:%S %p'
+logging.basicConfig(filename="log.txt", level="INFO",
+                    format=log_format, datefmt=log_date_format)
+logging.info("Bot activated")
 
 
 def create_twitter_api():
@@ -29,10 +33,10 @@ def create_twitter_api():
         api.verify_credentials()
     # if it doesn't log the error and throw the exception
     except Exception as e:
-        logger.error("Error creating API", exc_info=True)
+        logging.exception("Error creating API")
         raise e
     # if it works, log that it worked
-    logger.info("API created")
+    logging.debug("API created")
 
     # return the api object
     return(api)
