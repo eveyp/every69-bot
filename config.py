@@ -5,11 +5,12 @@ import yaml
 # start logger
 logger = logging.getLogger()
 
+
 def create_twitter_api():
     # read in api keys
     with open(r'api_keys.yaml') as file:
         keys = yaml.full_load(file)
-    
+
     # parse the api keys
     app_key = keys['app twitter']['key']
     app_secret = keys['app twitter']['secret']
@@ -21,7 +22,7 @@ def create_twitter_api():
     auth.set_access_token(posting_token, posting_secret)
 
     # create the API
-    api =  tweepy.API(auth)
+    api = tweepy.API(auth)
 
     # test that the API works
     try:
@@ -36,6 +37,7 @@ def create_twitter_api():
     # return the api object
     return(api)
 
+
 def get_street_view_api_key():
     # read in api keys
     with open(r'api_keys.yaml') as file:
@@ -44,6 +46,7 @@ def get_street_view_api_key():
     street_view_key = keys['google']['key']
 
     return(street_view_key)
+
 
 def get_db_location():
     # read in api keys

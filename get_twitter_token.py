@@ -6,7 +6,8 @@ with open(r'api_keys.yaml') as file:
     keys = yaml.full_load(file)
 
 # setup the authentication handler with the app's api key and secret
-auth = tweepy.OAuthHandler(keys['app twitter']['key'], keys['app twitter']['secret'])
+auth = tweepy.OAuthHandler(
+    keys['app twitter']['key'], keys['app twitter']['secret'])
 
 # get the authorization url from twitter and print it
 try:
