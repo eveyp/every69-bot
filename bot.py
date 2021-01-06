@@ -3,20 +3,36 @@ import logging
 import config
 import lot
 
-twitter_api = config.create_twitter_api()
-street_view_key = config.get_street_view_api_key()
-
 
 def main():
-    nl = lot.NiceLot()
+    try:
+        nl = lot.NiceLot()
+    except Exception as e:
+        logging.exception("Lot not created")
+        raise e
 
-    nl.get_image(street_view_key)
+    try:
+        nl.get_image(lot.google_key)
+    except Exception as e:
+        logging.exception("Error while getting image from Google")
+        raise e
 
-    nl.prep_tweet(twitter_api)
+    try:
+        nl.prep_tweet(lot.twitter_api)
+    except Exception as e:
+        logging.exception("Error while preparing tweet")
+        raise e
 
-    nl.post_tweet(twitter_api)
+    try:
+        nl.post_tweet(lot.twitter_api)
+    except Exception as e:
+        logging.exception("Error while posting tweet")
 
-    nl.mark_as_tweeted()
+    try:
+        nl.mark_as_tweeted()
+    except Exception as e:
+        logging.exception("Error while marking lot tweeted")
+        raise e
 
 
 if __name__ == '__main__':
