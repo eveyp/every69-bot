@@ -3,6 +3,7 @@ import logging
 from PIL import Image
 import requests
 from io import BytesIO
+from urllib.parse import urljoin
 import config
 
 QUERY = "SELECT * FROM only69 WHERE tweeted = 0 ORDER BY id LIMIT 1;"
@@ -42,15 +43,36 @@ class NiceLot(object):
         logging.info("Got a lot: %s %s %s %s",
                      self.address['street'], self.address['city'], self.address['state'], self.address['zip'])
 
-    # gets the image of the address from google street view
-    def get_image(self, street_view_key=config.get_street_view_api_key()):
-        # concatenate the address
-        self.street_address = "%s %s %s %s %s" % (
+    def build_street_address(self):
+        street_address = "%s %s %s %s %s" % (
             self.address['number'], self.address['street'], self.address['city'], self.address['state'], self.address['zip'])
 
+        return(street_address)
+
+    def is_address_usable(self, street_view_key=config.get_street_view_api_key()):
+        return(self.is_address_complete() and self.is_address_in_street_view(street_view_key))
+
+    def is_address_complete(self):
+        return(bool(self.address['street'] and self.address['city'] and self.address['state']))
+
+    def is_address_in_street_view(self, street_view_key):
+        sv_meta_api = svapi + "/metadata"
+
+        params = {'key': street_view_key,
+                  'location': self.build_street_address()}
+
+        res = requests.get(sv_meta_api, params)
+
+        if res.json()['status'] == "OK":
+            return(True)
+        else:
+            return(False)
+
+    # gets the image of the address from google street view
+    def get_image(self, street_view_key=config.get_street_view_api_key()):
         # gather the street view api key, address, and image size for the api request
         params = dict(key=street_view_key,
-                      location=self.street_address,
+                      location=self.build_street_address(),
                       size='1000x1000')
 
         # make the request to the street view api
@@ -79,7 +101,8 @@ class NiceLot(object):
     def post_tweet(self, twitter_api=config.create_twitter_api()):
 
         self.status_id = twitter_api.update_status(status=self.tweet_text,
-                                                   media_ids=[self.image_id.media_id_string],
+                                                   media_ids=[
+                                                       self.image_id.media_id_string],
                                                    lat=self.address['lat'],
                                                    lon=self.address['lon'])
         logging.info("Tweet posted")
