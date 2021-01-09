@@ -3,6 +3,7 @@ import logging
 from PIL import Image
 import requests
 from io import BytesIO
+from urllib.parse import urljoin
 import config
 
 QUERY = "SELECT * FROM only69 WHERE tweeted = 0 ORDER BY id LIMIT 1;"
