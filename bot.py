@@ -12,7 +12,7 @@ def main():
         raise e
 
     try:
-        nl.get_image(lot.street_view_key)
+        nl.get_image(lot.google_key)
     except Exception as e:
         logging.exception("Error while getting image from Google")
         raise e
