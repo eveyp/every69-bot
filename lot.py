@@ -93,6 +93,9 @@ class NiceLot(object):
         # if google gave us something with a street number that's not 69, throw it away and start over
         if self.address['number'] != "69":
             self.bad_address()
+        
+        if not self.is_address_in_street_view():
+            self.bad_address()
 
         # log the good address we got
         logging.info("Got a lot: " + self.build_street_address())
@@ -125,14 +128,11 @@ class NiceLot(object):
 
     # gets the image of the lot from google street view
     def get_image(self, street_view_key=google_key):
-        # if street view doesn't have an image for the lot, toss it and start over
-        if not self.is_address_in_street_view(street_view_key):
-            self.bad_address()
-
         # gather the street view api key, address, and image size for the api request
         params = dict(key=street_view_key,
                       location=self.build_street_address(),
-                      size='1000x1000')
+                      size='1000x1000',
+                      pitch=5)
 
         # make the request to the street view api
         res = requests.get(svapi, params=params)
@@ -149,7 +149,7 @@ class NiceLot(object):
     def prep_tweet(self, twitter_api=twitter_api):
         filename = "%s.jpg" % self.address['id']
         self.image_id = twitter_api.media_upload(filename, file=self.tempimg)
-        self.tweet_text = "{number} {street} {city}, {state}".format(
+        self.tweet_text = "{number} {street}, {city}, {state}".format(
             number=self.address['number'],
             street=self.address['street'],
             city=self.address['city'],
